@@ -14,7 +14,7 @@ DataHelper.CreateBitmap(test, 9, 14, 0);
 var rng = new Random();
 for (int i = 0; i < 30; i++)
 {
-    var ind = rng.Next(9*14 - 1);
+    var ind = rng.Next(9 * 14 - 1);
     var value = rng.Next(1) < 1 ? -1 : 1;
     test[ind] = value;
 }
