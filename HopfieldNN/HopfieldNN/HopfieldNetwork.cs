@@ -16,7 +16,7 @@ namespace HopfieldNN
             _weights = new double[neuronCount, neuronCount];
         }
 
-        public void Train(double[][] trainingData)
+        public void Train(int[][] trainingData)
         {
             int trainSize = trainingData.GetLength(0);
             for (int k = 0; k < trainSize; k++)
@@ -49,10 +49,10 @@ namespace HopfieldNN
             }
         }
 
-        public void Predict(double[] input)
+        public int[] Predict(int[] input)
         {
             var iterations = 20;
-            var output = new double[input.Length];
+            var output = new int[input.Length];
             while(iterations > 0)
             {
                 //Synch
@@ -84,6 +84,8 @@ namespace HopfieldNN
 
                 iterations--;
             }
+
+            return input;
         }
     }
 }
