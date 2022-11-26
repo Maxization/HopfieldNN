@@ -2,8 +2,8 @@
 
 
 using HopfieldNN;
-using System.Drawing;
-using System.Drawing.Imaging;
+
+//var input = DataHelper.ReadBmpFiles("../../../../../cat_bmp", 512, 512);
 
 var nn = new HopfieldNetwork(9 * 14);
 var data = DataHelper.ReaderCSV("../../../../../projekt2/animals-14x9.csv");

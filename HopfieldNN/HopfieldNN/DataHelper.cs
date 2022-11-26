@@ -67,5 +67,29 @@ namespace HopfieldNN
             bmp.UnlockBits(data);
             return bmp;
         }
+        public static int[][] ReadBmpFiles(string folderPath, int width, int height)
+        {
+            string[] images = Directory.GetFiles(folderPath);
+            var result = new int[images.Length][];
+
+            for (int i = 0; i < images.Length; i++)
+            {
+                Bitmap bm = new Bitmap(images[i]);
+                FastBitmap fbm = new FastBitmap(bm, ImageLockMode.ReadOnly);
+                var image = new int[width * height];
+                for (int q = 0; q < height; q++)
+                {
+                    for (int p = 0; p < width; p++)
+                    {
+                        var color_byte = fbm[p, q];
+                        int value = color_byte[0] > 0 ? -1 : 1;
+                        image[q * width + p] = value;
+                    }
+                }
+                result[i] = image;
+            }
+
+            return result;
+        }
     }
 }
