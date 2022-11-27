@@ -1,4 +1,4 @@
-﻿using System.Drawing.Imaging;
+﻿/*using System.Drawing.Imaging;
 using System.Drawing;
 
 //https://stackoverflow.com/questions/2574564/save-a-32-bit-bitmap-as-1-bit-bmp-file-in-c-sharp
@@ -44,4 +44,4 @@ public unsafe class FastBitmap : IDisposable
     {
         _bmp.UnlockBits(_data);
     }
-}
+}*/

@@ -30,7 +30,7 @@ namespace HopfieldNN
 
             return data.ToArray();
         }
-        public static void CreateBitmap(int[] input, int height, int width, int ind)
+        /*public static void CreateBitmap(int[] input, int height, int width, int ind)
         {
             Bitmap bm = new Bitmap(width, height);
             FastBitmap fbm = new FastBitmap(bm, ImageLockMode.WriteOnly);
@@ -90,6 +90,6 @@ namespace HopfieldNN
             }
 
             return result;
-        }
+        }*/
     }
 }
