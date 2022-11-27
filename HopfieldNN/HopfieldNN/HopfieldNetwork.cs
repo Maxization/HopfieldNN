@@ -31,8 +31,6 @@ namespace HopfieldNN
             _ojaMaxIters = ojaMaxIters;
         }
 
-
-
         public void Train(int[][] trainingData)
         {
             switch (_rule)
@@ -53,15 +51,15 @@ namespace HopfieldNN
             trainHebb(trainingData);
             for (int q = 0; q < _ojaMaxIters; q++)
             {
-                if (q % 10 == 0)
+                if (q % 3 == 0)
                 {
                     Console.WriteLine($"Iteration: {q}");
                 }
-                //var old = (double[,])_weights.Clone();
-                var numNeurons = trainingData[0].Length;
-                for (int i = 0; i < numNeurons; i++)
+
+                var old = (double[,])_weights.Clone();
+                for (int i = 0; i < _neuronCount; i++)
                 {
-                    for (int j = 0; j < numNeurons; j++)
+                    for (int j = 0; j < _neuronCount; j++)
                     {
                         if (i == j)
                             continue;
@@ -76,7 +74,11 @@ namespace HopfieldNN
                         }
                     }
                 }
-                //Console.WriteLine(diffNorm(old, _weights));
+                
+                if (diffNorm(old, _weights) < 1e-10)
+                {
+                    break;
+                }
             }
         }
 
@@ -127,7 +129,7 @@ namespace HopfieldNN
 
         public int[] Predict(int[] _input, bool synch = true)
         {
-            var iterations = 20;
+            var iterations = 0;
             var input = (int[])_input.Clone();
 
             var energy = Energy(input);
@@ -135,7 +137,7 @@ namespace HopfieldNN
             if (synch)
             {
                 var output = new int[input.Length];
-                while (iterations > 0)
+                while (iterations < 100)
                 {
                     //Synch
                     for (int i = 0; i < output.Length; i++)
@@ -148,17 +150,13 @@ namespace HopfieldNN
 
                         sum -= _threshold;
 
-                        if (sum > 0)
+                        if (sum >= 0)
                         {
                             output[i] = 1;
                         }
-                        else if (sum < 0)
-                        {
-                            output[i] = -1;
-                        }
                         else
                         {
-                            output[i] = 0;
+                            output[i] = -1;
                         }
                     }
 
@@ -176,7 +174,7 @@ namespace HopfieldNN
                     }
 
                     energy = newEnergy;
-                    iterations--;
+                    iterations++;
                 }
             }
             else
@@ -195,17 +193,13 @@ namespace HopfieldNN
                         }
                         sum -= _threshold;
 
-                        if (sum > 0)
+                        if (sum >= 0)
                         {
                             input[ind] = 1;
                         }
-                        else if (sum < 0)
-                        {
-                            input[ind] = -1;
-                        }
                         else
                         {
-                            input[ind] = 0;
+                            input[ind] = -1;
                         }
                     }
 
