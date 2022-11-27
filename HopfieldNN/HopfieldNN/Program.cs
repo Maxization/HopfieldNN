@@ -4,17 +4,17 @@
 using HopfieldNN;
 
 //var input = DataHelper.ReadBmpFiles("../../../../../cat_bmp", 512, 512);
-
-var nn = new HopfieldNetwork(9 * 14, "oja");
-var data = DataHelper.ReaderCSV("../../../../../projekt2/animals-14x9.csv");
+int width = 14, height = 20;
+var rng = new Random(42);
+var nn = new HopfieldNetwork(width * height, "oja");
+var data = DataHelper.ReaderCSV("../../../../../projekt2/letters-14x20.csv");
 nn.Train(data);
 
-var test = data[0];
+var test = data[15];
 //DataHelper.CreateBitmap(test, 9, 14, 0);
-var rng = new Random(42);
 for (int i = 0; i < 30; i++)
 {
-    var ind = rng.Next(9 * 14 - 1);
+    var ind = rng.Next(width * height - 1);
     var value = rng.Next(1) < 1 ? -1 : 1;
     test[ind] = value;
 }
@@ -22,11 +22,11 @@ for (int i = 0; i < 30; i++)
 //DataHelper.CreateBitmap(test, 9, 14, 1);
 
 var test2 = nn.Predict(test);
-for (int i = 0; i < 9; i++)
+for (int i = 0; i < height; i++)
 {
-    for (int j = 0; j < 14; j++)
+    for (int j = 0; j < width; j++)
     {
-        if (data[0][i * 14 + j] == 1)
+        if (test2[i * width + j] == 1)
         {
             Console.Write("O");
         }

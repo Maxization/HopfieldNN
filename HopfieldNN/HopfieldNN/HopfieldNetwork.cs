@@ -13,7 +13,7 @@ namespace HopfieldNN
         private string _rule;
         private double[,] _weights;
         private Random _rng;
-        public HopfieldNetwork(int neuronCount, string rule, double lr=0.001)
+        public HopfieldNetwork(int neuronCount, string rule, double lr=10e-7)
         {
             _neuronCount = neuronCount;
             _lr = lr;
@@ -39,14 +39,8 @@ namespace HopfieldNN
 
         private void trainOja(int[][] trainingData)
         {
-            for (int i = 0; i < _weights.GetLength(0); i++)
-            {
-                for (int j = 0; j < _weights.GetLength(1); j++)
-                {
-                    _weights[i, j] = (_rng.NextDouble() * 2.0 - 1.0);// * 0.01;
-                }
-            }
-            for (int q = 0; q < 100; q++)
+            trainHebb(trainingData);
+            for (int q = 0; q < 2; q++)
             {
                 var old = (double[,])_weights.Clone();
                 var numNeurons = trainingData[0].Length;
@@ -117,14 +111,10 @@ namespace HopfieldNN
             } 
         }
 
-        private int[] dot(int[] a, int[] b)
-        {
-            return a.Zip(b, (a,b) => a*b).ToArray();
-        }
-
-        public int[] Predict(int[] input)
+        public int[] Predict(int[] _input)
         {
             var iterations = 20;
+            var input = (int[])_input.Clone();
             var output = new int[input.Length];
             while(iterations > 0)
             {
