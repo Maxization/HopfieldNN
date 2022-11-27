@@ -1,16 +1,19 @@
-﻿// See https://aka.ms/new-console-template for more information
-
-
-using HopfieldNN;
+﻿using HopfieldNN;
 
 //var input = DataHelper.ReadBmpFiles("../../../../../cat_bmp", 512, 512);
-int width = 14, height = 20;
+int width = 7, height = 7;
+var dataset = $"small-{width}x{height}";
+var mode = "oja";
+var networkName = $"{dataset}-{mode}";
 var rng = new Random(42);
-var nn = new HopfieldNetwork(width * height, "oja");
-var data = DataHelper.ReaderCSV("../../../../../projekt2/letters-14x20.csv");
-nn.Train(data);
 
-var test = data[15];
+var data = DataHelper.ReaderCSV($"../../../../../projekt2/{dataset}.csv");
+var nn = new HopfieldNetwork(width * height, mode);
+nn.Train(data);
+nn.Save(networkName);
+//var nn =DataHelper.HopfieldNetworkFromFile($"{dataset}-{mode}");
+
+var test = data[1];
 //DataHelper.CreateBitmap(test, 9, 14, 0);
 for (int i = 0; i < 30; i++)
 {
