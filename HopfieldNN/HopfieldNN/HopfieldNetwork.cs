@@ -20,7 +20,7 @@ namespace HopfieldNN
         private double[,] _weights;
         private double _threshold;
         private Random _rng;
-        public HopfieldNetwork(int neuronCount, string rule, double lr=10e-7, int ojaMaxIters=100)
+        public HopfieldNetwork(int neuronCount, string rule, double lr=10e-7, int ojaMaxIters=1000)
         {
             _threshold = 0;
             _neuronCount = neuronCount;
@@ -51,30 +51,27 @@ namespace HopfieldNN
             trainHebb(trainingData);
             for (int q = 0; q < _ojaMaxIters; q++)
             {
-                if (q % 3 == 0)
+                if (q % 10 == 0)
                 {
                     Console.WriteLine($"Iteration: {q}");
                 }
 
                 var old = (double[,])_weights.Clone();
-                for (int i = 0; i < _neuronCount; i++)
+                foreach (var pattern in trainingData)
                 {
-                    for (int j = 0; j < _neuronCount; j++)
+                    var V = Multiplication(_weights, pattern);
+                    for (int i = 0; i < _neuronCount; i++)
                     {
-                        if (i == j)
-                            continue;
-                        foreach (var pattern in trainingData)
+                        for (int j = 0; j < _neuronCount; j++)
                         {
-                            var V = 0.0;
-                            for (int k = 0; k < pattern.Length; k++)
-                            {
-                                V += pattern[k] * _weights[i, k];
-                            }
-                            _weights[i, j] += _lr * V * (pattern[i] - V * _weights[i, j]);
+                            if (i == j)
+                                continue;
+
+                            _weights[i, j] += _lr * V[i] * (pattern[j] - V[i] * _weights[i, j]);
                         }
                     }
                 }
-                
+
                 if (diffNorm(old, _weights) < 1e-10)
                 {
                     break;
@@ -234,6 +231,20 @@ namespace HopfieldNN
                 for (int j = 0; j < y.GetLength(0); j++)
                 {
                     result[i] += x[j] * y[j, i]; 
+                }
+            }
+
+            return result;
+        }
+
+        private double[] Multiplication(double[,] x, int[] y)
+        {
+            var result = new double[x.GetLength(0)];
+            for (int i = 0; i < x.GetLength(0); i++)
+            {
+                for (int j = 0; j < x.GetLength(1); j++)
+                {
+                    result[i] += x[i, j] * y[j];
                 }
             }
 
