@@ -3,24 +3,33 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 
 namespace HopfieldNN
 {
+
     public class HopfieldNetwork
     {
         private int _neuronCount;
+        [JsonProperty("learning_rate")]
         private double _lr;
+        [JsonProperty("rule")]
         private string _rule;
+        private int _ojaMaxIters;
+        [JsonProperty("weights")]
         private double[,] _weights;
         private Random _rng;
-        public HopfieldNetwork(int neuronCount, string rule, double lr=10e-7)
+        public HopfieldNetwork(int neuronCount, string rule, double lr=10e-7, int ojaMaxIters=100)
         {
             _neuronCount = neuronCount;
             _lr = lr;
             _rule = rule;
             _weights = new double[neuronCount, neuronCount];
             _rng = new Random(42);
+            _ojaMaxIters = ojaMaxIters;
         }
+
+
 
         public void Train(int[][] trainingData)
         {
@@ -33,14 +42,14 @@ namespace HopfieldNN
                     trainHebb(trainingData);
                     break;
                 default:
-                    throw new Exception();
+                    throw new ArgumentException($"rule {_rule} is not supported");
             }
         }
 
         private void trainOja(int[][] trainingData)
         {
             trainHebb(trainingData);
-            for (int q = 0; q < 2; q++)
+            for (int q = 0; q < _ojaMaxIters; q++)
             {
                 var old = (double[,])_weights.Clone();
                 var numNeurons = trainingData[0].Length;
@@ -149,6 +158,13 @@ namespace HopfieldNN
             }
 
             return input;
+        }
+        public void Save(string name)
+        {
+            string json = JsonConvert.SerializeObject(this);
+            var dir = "../../../../../trained";
+            Directory.CreateDirectory(dir);
+            File.WriteAllText($"{dir}/{name}.json", json);
         }
     }
 }

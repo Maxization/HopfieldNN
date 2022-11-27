@@ -6,6 +6,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Runtime.InteropServices;
+using Newtonsoft.Json;
 
 namespace HopfieldNN
 {
@@ -29,6 +30,13 @@ namespace HopfieldNN
             }
 
             return data.ToArray();
+        }
+        public static HopfieldNetwork HopfieldNetworkFromFile(string name)
+        {
+            var dir = "../../../../../trained";
+            var json = File.ReadAllText($"{dir}/{name}.json");
+            var  obj = JsonConvert.DeserializeObject<HopfieldNetwork>(json);
+            return obj;
         }
         /*public static void CreateBitmap(int[] input, int height, int width, int ind)
         {
