@@ -12,9 +12,11 @@ namespace HopfieldNN
         private double _lr;
         private string _rule;
         private double[,] _weights;
+        private double _threshold;
         private Random _rng;
         public HopfieldNetwork(int neuronCount, string rule, double lr=10e-7)
         {
+            _threshold = 0;
             _neuronCount = neuronCount;
             _lr = lr;
             _rule = rule;
@@ -40,9 +42,13 @@ namespace HopfieldNN
         private void trainOja(int[][] trainingData)
         {
             trainHebb(trainingData);
-            for (int q = 0; q < 2; q++)
+            for (int q = 0; q < 20; q++)
             {
-                var old = (double[,])_weights.Clone();
+                if (q % 10 == 0)
+                {
+                    Console.WriteLine($"Iteration: {q}");
+                }
+                //var old = (double[,])_weights.Clone();
                 var numNeurons = trainingData[0].Length;
                 for (int i = 0; i < numNeurons; i++)
                 {
@@ -61,8 +67,7 @@ namespace HopfieldNN
                         }
                     }
                 }
-                Console.WriteLine(diffNorm(old, _weights));
-
+                //Console.WriteLine(diffNorm(old, _weights));
             }
         }
 
@@ -111,44 +116,125 @@ namespace HopfieldNN
             } 
         }
 
-        public int[] Predict(int[] _input)
+        public int[] Predict(int[] _input, bool synch = true)
         {
             var iterations = 20;
             var input = (int[])_input.Clone();
-            var output = new int[input.Length];
-            while(iterations > 0)
+
+            var energy = Energy(input);
+
+            if (synch)
             {
-                //Synch
-                for(int i = 0; i < output.Length; i++)
+                var output = new int[input.Length];
+                while (iterations > 0)
                 {
-                    var sum = 0.0;
-                    for (int j = 0; j < output.Length; j++)
+                    //Synch
+                    for (int i = 0; i < output.Length; i++)
                     {
-                        sum += _weights[i, j] * input[j];
+                        var sum = 0.0;
+                        for (int j = 0; j < output.Length; j++)
+                        {
+                            sum += _weights[i, j] * input[j];
+                        }
+
+                        sum -= _threshold;
+
+                        if (sum > 0)
+                        {
+                            output[i] = 1;
+                        }
+                        else if (sum < 0)
+                        {
+                            output[i] = -1;
+                        }
+                        else
+                        {
+                            output[i] = 0;
+                        }
                     }
 
-                    if (sum > 0)
+                    for (int i = 0; i < input.Length; i++)
                     {
-                        output[i] = 1;
-                    } else if (sum < 0)
-                    {
-                        output[i] = -1;
+                        input[i] = output[i];
                     }
-                    else
+
+                    var newEnergy = Energy(input);
+
+                    if (Math.Abs(newEnergy - energy) < 1e-8)
                     {
-                        output[i] = 0;
+                        Console.WriteLine(iterations);
+                        return input;
                     }
+
+                    energy = newEnergy;
+                    iterations--;
                 }
-
-                for (int i = 0; i < input.Length; i++)
+            }
+            else
+            {
+                while (iterations > 0)
                 {
-                    input[i] = output[i];
-                }
+                    //Async
+                    for (int k = 0; k < 100; k++)
+                    {
+                        var ind = _rng.Next(_neuronCount);
 
-                iterations--;
+                        var sum = 0.0;
+                        for (int j = 0; j < input.Length; j++)
+                        {
+                            sum += _weights[ind, j] * input[j];
+                        }
+                        sum -= _threshold;
+
+                        if (sum > 0)
+                        {
+                            input[ind] = 1;
+                        }
+                        else if (sum < 0)
+                        {
+                            input[ind] = -1;
+                        }
+                        else
+                        {
+                            input[ind] = 0;
+                        }
+                    }
+
+                    var newEnergy = Energy(input);
+
+                    if (Math.Abs(newEnergy - energy) < 1e-8)
+                    {
+                        Console.WriteLine(iterations);
+                        return input;
+                    }
+
+                    energy = newEnergy;
+                    iterations--;
+                }
             }
 
             return input;
+        }
+
+        private double Energy(int[] data)
+        {
+            var v = Multiplication(data, _weights);
+            double dotProduct = v.Zip(data, (d1, d2) => d1 * d2).Sum();
+            return -0.5 * dotProduct + data.Sum(x => x * _threshold);
+        }
+
+        private double[] Multiplication(int[] x, double[,] y)
+        {
+            var result = new double[y.GetLength(1)];
+            for (int i = 0; i < y.GetLength(1); i++)
+            {
+                for (int j = 0; j < y.GetLength(0); j++)
+                {
+                    result[i] += x[j] * y[j, i]; 
+                }
+            }
+
+            return result;
         }
     }
 }
