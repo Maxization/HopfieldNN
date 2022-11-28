@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Formats.Tar;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -20,15 +21,21 @@ namespace HopfieldNN
         private double[,] _weights;
         private double _threshold;
         private Random _rng;
-        public HopfieldNetwork(int neuronCount, string rule, double lr=10e-7, int ojaMaxIters=1000)
+        int _width, _height;
+        int _predicted = 0;
+        bool _saveBitmaps;
+        public HopfieldNetwork(string rule, int width, int height, double lr=1e-7, int ojaMaxIters=100, int seed = 42, bool saveBitmaps = false)
         {
             _threshold = 0;
-            _neuronCount = neuronCount;
+            _neuronCount = width * height;
             _lr = lr;
             _rule = rule;
-            _weights = new double[neuronCount, neuronCount];
-            _rng = new Random(42);
+            _weights = new double[_neuronCount, _neuronCount];
+            _rng = new Random(seed);
             _ojaMaxIters = ojaMaxIters;
+            _width = width;
+            _height = height;
+            _saveBitmaps = saveBitmaps;
         }
 
         public void Train(int[][] trainingData)
@@ -51,15 +58,24 @@ namespace HopfieldNN
             trainHebb(trainingData);
             for (int q = 0; q < _ojaMaxIters; q++)
             {
-                if (q % 10 == 0)
-                {
-                    Console.WriteLine($"Iteration: {q}");
-                }
+                Console.WriteLine($"Oja iteration: {q}");
 
                 var old = (double[,])_weights.Clone();
                 foreach (var pattern in trainingData)
                 {
-                    var V = Multiplication(_weights, pattern);
+                    var V = new double[pattern.Length];
+
+                    for (int i = 0; i < pattern.Length; i++)
+                    {
+                        var sum = 0.0;
+                        for (int j = 0; j < pattern.Length; j++)
+                        {
+                            sum += old[i, j] * pattern[j];
+                        }
+
+                        V[i] = sum;
+                    }
+
                     for (int i = 0; i < _neuronCount; i++)
                     {
                         for (int j = 0; j < _neuronCount; j++)
@@ -67,7 +83,8 @@ namespace HopfieldNN
                             if (i == j)
                                 continue;
 
-                            _weights[i, j] += _lr * V[i] * (pattern[j] - V[i] * _weights[i, j]);
+                            double dw = _lr * V[i] * (pattern[j] - V[i] * _weights[i, j]);
+                            _weights[i, j] += dw;
                         }
                     }
                 }
@@ -96,6 +113,7 @@ namespace HopfieldNN
             int trainSize = trainingData.GetLength(0);
             for (int k = 0; k < trainSize; k++)
             {
+                Console.WriteLine(k);
                 var input = trainingData[k];
                 for (int i = 0; i < input.Length; i++)
                 {
@@ -126,6 +144,7 @@ namespace HopfieldNN
 
         public int[] Predict(int[] _input, bool synch = true)
         {
+            var maxIt = 100;
             var iterations = 0;
             var input = (int[])_input.Clone();
 
@@ -134,8 +153,13 @@ namespace HopfieldNN
             if (synch)
             {
                 var output = new int[input.Length];
-                while (iterations < 100)
+                while (iterations < maxIt)
                 {
+                    if (_saveBitmaps)
+                    {
+                        DataHelper.CreateBitmap(input, _height, _width, _predicted, "out", "_" + iterations.ToString());
+                    }
+
                     //Synch
                     for (int i = 0; i < output.Length; i++)
                     {
@@ -167,6 +191,11 @@ namespace HopfieldNN
                     if (Math.Abs(newEnergy - energy) < 1e-8)
                     {
                         Console.WriteLine(iterations);
+                        if (_saveBitmaps)
+                        {
+                            DataHelper.CreateBitmap(input, _height, _width, _predicted, "out", "_" + (iterations + 1).ToString());
+                        }
+                        _predicted++;
                         return input;
                     }
 
@@ -176,8 +205,13 @@ namespace HopfieldNN
             }
             else
             {
-                while (iterations > 0)
+                while (iterations < maxIt)
                 {
+                    if (_saveBitmaps)
+                    {
+                        DataHelper.CreateBitmap(input, _height, _width, _predicted, "out", "_" + iterations.ToString());
+                    }
+
                     //Async
                     for (int k = 0; k < 100; k++)
                     {
@@ -204,15 +238,25 @@ namespace HopfieldNN
 
                     if (Math.Abs(newEnergy - energy) < 1e-8)
                     {
-                        Console.WriteLine(iterations);
+                        Console.WriteLine($"Prediction iterations: {iterations}");
+                        if (_saveBitmaps)
+                        {
+                            DataHelper.CreateBitmap(input, _height, _width, _predicted, "out", "_" + (iterations + 1).ToString());
+                        }
+                        _predicted++;
                         return input;
                     }
 
                     energy = newEnergy;
-                    iterations--;
+                    iterations++;
                 }
             }
 
+            _predicted++;
+            if (_saveBitmaps)
+            {
+                DataHelper.CreateBitmap(input, _height, _width, _predicted, "out", "_" + (iterations + 1).ToString());
+            }
             return input;
         }
 

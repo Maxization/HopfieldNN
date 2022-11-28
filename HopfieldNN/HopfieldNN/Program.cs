@@ -1,47 +1,28 @@
 ﻿using HopfieldNN;
+using System.Collections;
+using System.Data;
+using System.Drawing;
 
-//var input = DataHelper.ReadBmpFiles("../../../../../cat_bmp", 512, 512);
-int width = 7, height = 7;
-var dataset = $"small-{width}x{height}";
-var mode = "oja";
-var networkName = $"{dataset}-{mode}";
-var rng = new Random(42);
+int width = 150, height = 200;
+var dataset = $"large-{width}x{height}";
+var mode = "oja";///oja
+
+//var networkName = $"{dataset}-{mode}";
+var rng = new Random();
 
 var data = DataHelper.ReaderCSV($"../../../../../projekt2/{dataset}.csv");
-var nn = new HopfieldNetwork(width * height, mode);
+//var data = DataHelper.ReadBmpFiles("../../../../../cat_bmp", width, height);
+
+var nn = new HopfieldNetwork(mode, width, height);
 nn.Train(data);
-nn.Save(networkName);
-//var nn =DataHelper.HopfieldNetworkFromFile($"{dataset}-{mode}");
+//nn.Save(networkName);
+//var nn = DataHelper.HopfieldNetworkFromFile($"{dataset}-{mode}");
 
-var test = data[1];
-//DataHelper.CreateBitmap(test, 9, 14, 0);
-for (int i = 0; i < 30; i++)
+var it = 0;
+foreach (var input in data)
 {
-    var ind = rng.Next(width * height - 1);
-    var value = rng.Next(1) < 1 ? -1 : 1;
-    test[ind] = value;
+    var corruptedInput = DataHelper.RandomInput(width * height, rng); //input;// DataHelper.CorruptData(0.5, input, rng);
+    DataHelper.CreateBitmap(corruptedInput, height, width, it, "in");
+    var output = nn.Predict(corruptedInput);
+    DataHelper.CreateBitmap(output, height, width, it++, "out", "_");
 }
-
-//DataHelper.CreateBitmap(test, 9, 14, 1);
-
-var test2 = nn.Predict(test);
-for (int i = 0; i < height; i++)
-{
-    for (int j = 0; j < width; j++)
-    {
-        if (test2[i * width + j] == 1)
-        {
-            Console.Write("O");
-        }
-        else
-        {
-            Console.Write(".");
-        }
-    }
-    Console.WriteLine();
-}
-//DataHelper.CreateBitmap(test2, 9, 14, 2);
-
-
-
-
