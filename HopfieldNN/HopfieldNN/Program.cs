@@ -1,28 +1,19 @@
-﻿using HopfieldNN;
 using System.Collections;
-using System.Data;
-using System.Drawing;
+using HopfieldNN;
 
-int width = 150, height = 200;
-var dataset = $"large-{width}x{height}";
-var mode = "oja";///oja
-
-//var networkName = $"{dataset}-{mode}";
-var rng = new Random();
+//var input = DataHelper.ReadBmpFiles("../../../../../cat_bmp", 512, 512);
+int width = 7, height = 7;
+var dataset = $"small-{width}x{height}";
+var mode = LearningRule.Hebb;
+var networkName = $"{dataset}-{mode}";
+var rng = new Random(42);
 
 var data = DataHelper.ReaderCSV($"../../../../../projekt2/{dataset}.csv");
-//var data = DataHelper.ReadBmpFiles("../../../../../cat_bmp", width, height);
+var nn = new HopfieldNetwork(mode, width, height, 1e-7, 100, 42, true);
 
-var nn = new HopfieldNetwork(mode, width, height);
 nn.Train(data);
-//nn.Save(networkName);
-//var nn = DataHelper.HopfieldNetworkFromFile($"{dataset}-{mode}");
 
-var it = 0;
-foreach (var input in data)
+foreach(var input in data)
 {
-    var corruptedInput = DataHelper.RandomInput(width * height, rng); //input;// DataHelper.CorruptData(0.5, input, rng);
-    DataHelper.CreateBitmap(corruptedInput, height, width, it, "in");
-    var output = nn.Predict(corruptedInput);
-    DataHelper.CreateBitmap(output, height, width, it++, "out", "_");
+    nn.Predict(input);
 }

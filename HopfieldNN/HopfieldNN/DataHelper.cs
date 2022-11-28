@@ -1,10 +1,6 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections;
 using System.Drawing.Imaging;
 using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Runtime.InteropServices;
 using Newtonsoft.Json;
 
@@ -12,6 +8,84 @@ namespace HopfieldNN
 {
     public static class DataHelper
     {
+        public static int[] RandomVector(int n)
+        {
+            var rng = new Random();
+            var v = new int[n];
+            for (int i = 0; i < n; i++)
+            {
+                v[i] = rng.Next() % 2 * 2 - 1;
+            }
+            return v;
+        }
+
+        public static int[] Blur(int[] data)
+        {
+            var blurred = (int[]) data.Clone();
+            var rng = new Random();
+            for (int i = 0; i < data.Length/10; i++)
+            {
+                var ind = rng.Next(data.Length - 1);
+                data[ind] = -data[ind];
+            }
+
+            return blurred;
+        }
+        public static float Accuracy(int[] exp, int[] act)
+        {
+            int correct = 0;
+            for (int i = 0; i < exp.Length; i++)
+            {
+                if (exp[i] == act[i])
+                {
+                    correct++;
+                }
+            }
+            return (float)correct / exp.Length * 100;
+        }
+
+        public static int[][] StableInputs(int n)
+        {
+            int[][] data = new int[][]{};
+            int bits = 12;
+            for (int j = 0; j < Math.Pow(2, bits); j++)
+            {
+                var d = new int[n] ;
+                var chars = n / bits;
+                BitArray b = new BitArray(new int[] { j });
+                for (int k = 0; k < bits; k++)
+                {
+                    for (int l = k * chars; l < k * chars + chars; l++)
+                    {
+                        d[l] = b[k]?1:-1;
+                    }
+                }
+                if (j%10000 == 0)
+                    Console.WriteLine($"{j/Math.Pow(2, bits)}");
+                d[n - 1] = d[n - 2];
+                data = data.Append(d).ToArray();
+            }
+
+            return data;
+        }
+        public static void Print(int[] data, int width, int height)
+        {
+            for (int i = 0; i < height; i++)
+            {
+                for (int j = 0; j < width; j++)
+                {
+                    if (data[i * width + j] == 1)
+                    {
+                        Console.Write("O");
+                    }
+                    else
+                    {
+                        Console.Write(".");
+                    }
+                }
+                Console.WriteLine();
+            }
+        }
         public static int[][] ReaderCSV(string file)
         {
             var parser = new Microsoft.VisualBasic.FileIO.TextFieldParser(file);
@@ -147,13 +221,9 @@ namespace HopfieldNN
             }
         }
 
-        public static int[] CorruptData(double corruptionRate, int[] input, Random rng = null)
+        public static int[] CorruptData(double corruptionRate, int[] input, Random rng)
         {
             int[] _input = (int[])input.Clone();
-            if (rng == null)
-            {
-                rng = new Random();
-            }
 
             int n = (int)(_input.Length * corruptionRate);
             for (int i = 0; i < n; i++)
@@ -175,19 +245,6 @@ namespace HopfieldNN
             }
 
             return result;
-        }
-
-        public static float Accuracy(int[] exp, int[] act)
-        {
-            int correct = 0;
-            for (int i = 0; i < exp.Length; i++)
-            {
-                if (exp[i] == act[i])
-                {
-                    correct++;
-                }
-            }
-            return (float)correct / exp.Length * 100;
         }
     }
 }

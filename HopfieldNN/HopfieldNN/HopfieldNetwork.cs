@@ -8,14 +8,18 @@ using Newtonsoft.Json;
 
 namespace HopfieldNN
 {
-
+    public enum LearningRule
+    {
+        Oja,
+        Hebb,
+    }
     public class HopfieldNetwork
     {
         private int _neuronCount;
         [JsonProperty("learning_rate")]
         private double _lr;
         [JsonProperty("rule")]
-        private string _rule;
+        private LearningRule _rule;
         private int _ojaMaxIters;
         [JsonProperty("weights")]
         private double[,] _weights;
@@ -24,7 +28,8 @@ namespace HopfieldNN
         int _width, _height;
         int _predicted = 0;
         bool _saveBitmaps;
-        public HopfieldNetwork(string rule, int width, int height, double lr=1e-7, int ojaMaxIters=100, int seed = 42, bool saveBitmaps = false)
+
+        public HopfieldNetwork(LearningRule rule, int width, int height, double lr=1e-7, int ojaMaxIters=100, int seed = 42, bool saveBitmaps = false)
         {
             _threshold = 0;
             _neuronCount = width * height;
@@ -42,10 +47,10 @@ namespace HopfieldNN
         {
             switch (_rule)
             {
-                case "oja":
+                case LearningRule.Oja:
                     trainOja(trainingData);
                     break;
-                case "hebb":
+                case LearningRule.Hebb:
                     trainHebb(trainingData);
                     break;
                 default:
@@ -56,12 +61,14 @@ namespace HopfieldNN
         private void trainOja(int[][] trainingData)
         {
             trainHebb(trainingData);
+
             for (int q = 0; q < _ojaMaxIters; q++)
             {
                 Console.WriteLine($"Oja iteration: {q}");
 
                 var old = (double[,])_weights.Clone();
-                foreach (var pattern in trainingData)
+
+                foreach(var pattern in trainingData)
                 {
                     var V = new double[pattern.Length];
 
@@ -80,11 +87,7 @@ namespace HopfieldNN
                     {
                         for (int j = 0; j < _neuronCount; j++)
                         {
-                            if (i == j)
-                                continue;
-
-                            double dw = _lr * V[i] * (pattern[j] - V[i] * _weights[i, j]);
-                            _weights[i, j] += dw;
+                            _weights[i, j] += _lr * V[i] * (pattern[j] - V[i] * old[i, j]);
                         }
                     }
                 }
@@ -185,7 +188,6 @@ namespace HopfieldNN
                     {
                         input[i] = output[i];
                     }
-
                     var newEnergy = Energy(input);
 
                     if (Math.Abs(newEnergy - energy) < 1e-8)
