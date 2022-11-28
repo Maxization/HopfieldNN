@@ -8,6 +8,11 @@ using Newtonsoft.Json;
 namespace HopfieldNN
 {
 
+    public enum LearningRule
+    {
+        Oja,
+        Hebb,
+    }
     public class HopfieldNetwork
     {
         private int _neuronCount;
@@ -20,7 +25,7 @@ namespace HopfieldNN
         private double[,] _weights;
         private double _threshold;
         private Random _rng;
-        public HopfieldNetwork(int neuronCount, string rule, double lr=10e-7, int ojaMaxIters=1000)
+        public HopfieldNetwork(int neuronCount, string rule, double lr=10e-7, int ojaMaxIters=10)
         {
             _threshold = 0;
             _neuronCount = neuronCount;
@@ -48,30 +53,35 @@ namespace HopfieldNN
 
         private void trainOja(int[][] trainingData)
         {
-            trainHebb(trainingData);
+            for (int i = 0; i < _weights.GetLength(0); i++)
+            {
+                for (int j = 0; j < _weights.GetLength(1); j++)
+                    _weights[i, j] = 1;
+                _weights[i, i] = 0;
+            }
             for (int q = 0; q < _ojaMaxIters; q++)
             {
-                if (q % 10 == 0)
-                {
-                    Console.WriteLine($"Iteration: {q}");
-                }
-
                 var old = (double[,])_weights.Clone();
-                foreach (var pattern in trainingData)
-                {
-                    var V = Multiplication(_weights, pattern);
-                    for (int i = 0; i < _neuronCount; i++)
-                    {
-                        for (int j = 0; j < _neuronCount; j++)
-                        {
-                            if (i == j)
-                                continue;
 
-                            _weights[i, j] += _lr * V[i] * (pattern[j] - V[i] * _weights[i, j]);
+
+                for (int i = 0; i < _neuronCount; i++)
+                {
+                    for (int j = 0; j < _neuronCount; j++) {
+                        if (i == j)
+                            continue;
+                        foreach (var pattern in trainingData)
+                        {
+                           
+                                var V = Multiplication(_weights, pattern);
+
+                                _weights[i, j] += _lr * V[i] * (pattern[j] - V[i] * _weights[i, j]);
                         }
                     }
                 }
-
+                if (q % 10 == 0)
+                {
+                    Console.WriteLine($"Iteration: {q}, {diffNorm(old, _weights)}");
+                }
                 if (diffNorm(old, _weights) < 1e-10)
                 {
                     break;
@@ -161,7 +171,6 @@ namespace HopfieldNN
                     {
                         input[i] = output[i];
                     }
-
                     var newEnergy = Energy(input);
 
                     if (Math.Abs(newEnergy - energy) < 1e-8)
@@ -203,7 +212,7 @@ namespace HopfieldNN
                     var newEnergy = Energy(input);
 
                     if (Math.Abs(newEnergy - energy) < 1e-8)
-                    {
+                    {               
                         Console.WriteLine(iterations);
                         return input;
                     }
