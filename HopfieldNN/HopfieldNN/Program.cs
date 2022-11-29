@@ -37,6 +37,7 @@ foreach(var folder in folders)
 var maxOjaIt = 1000;
 var seed = 42;
 var saveBitmaps = true;
+var lr = 1e-7;
 
 foreach(var dataset in datasets)
 {
@@ -44,28 +45,28 @@ foreach(var dataset in datasets)
 
     Console.WriteLine($"{dataset.name}:");
     Console.WriteLine("Synch Hebb");
-    var nn = new HopfieldNetwork(LearningRule.Hebb, dataset.width, dataset.height, 1e-7, maxOjaIt, seed, saveBitmaps);
+    var nn = new HopfieldNetwork(LearningRule.Hebb, dataset.width, dataset.height, lr, maxOjaIt, seed, saveBitmaps);
     nn.savePath = "1.SH/out";
     nn.Train(data);
     var output = ProcessTest(nn, data, true);
     DisplayInfo(output.acc, output.stableCount, data[0].Length, data.Length);
 
     Console.WriteLine("\nAsync Hebb");
-    nn = new HopfieldNetwork(LearningRule.Hebb, dataset.width, dataset.height, 1e-7, maxOjaIt, seed, saveBitmaps);
+    nn = new HopfieldNetwork(LearningRule.Hebb, dataset.width, dataset.height, lr, maxOjaIt, seed, saveBitmaps);
     nn.savePath = "2.AH/out";
     nn.Train(data);
     output = ProcessTest(nn, data, false);
     DisplayInfo(output.acc, output.stableCount, data[0].Length, data.Length);
 
     Console.WriteLine("\nSynch Oja");
-    nn = new HopfieldNetwork(LearningRule.Oja, dataset.width, dataset.height, 1e-7, maxOjaIt, seed, saveBitmaps);
+    nn = new HopfieldNetwork(LearningRule.Oja, dataset.width, dataset.height, lr, maxOjaIt, seed, saveBitmaps);
     nn.Train(data);
     nn.savePath = "3.SO/out";
     output = ProcessTest(nn, data, true);
     DisplayInfo(output.acc, output.stableCount, data[0].Length, data.Length);
 
     Console.WriteLine("\nAsync Oja");
-    nn = new HopfieldNetwork(LearningRule.Oja, dataset.width, dataset.height, 1e-7, maxOjaIt, seed, saveBitmaps);
+    nn = new HopfieldNetwork(LearningRule.Oja, dataset.width, dataset.height, lr, maxOjaIt, seed, saveBitmaps);
     nn.Train(data);
     nn.savePath = "4.AO/out";
     output = ProcessTest(nn, data, false);
