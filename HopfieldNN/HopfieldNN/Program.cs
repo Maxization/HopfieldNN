@@ -1,8 +1,7 @@
 using HopfieldNN;
-using System.Data;
 
 //var input = DataHelper.ReadBmpFiles("../../../../../cat_bmp", 512, 512);
-var maxOjaIt = 1000;
+var maxOjaIt = 100;
 var seed = 42;
 var saveBitmaps = true;
 var lr = 1e-7;
