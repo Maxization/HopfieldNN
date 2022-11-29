@@ -1,9 +1,14 @@
 using HopfieldNN;
+using System.Data;
 
 //var input = DataHelper.ReadBmpFiles("../../../../../cat_bmp", 512, 512);
+var maxOjaIt = 1000;
+var seed = 42;
+var saveBitmaps = true;
+var lr = 1e-7;
 
-var datasets = new (string name, int width, int height)[] 
-{ 
+var datasets = new (string name, int width, int height)[]
+{
     //("animals-14x9", 14, 9),
     ("large-25x25", 25, 25),
     //("large-25x25.plus", 25,25),
@@ -33,11 +38,6 @@ foreach(var folder in folders)
     }
 }
 #endregion
-
-var maxOjaIt = 1000;
-var seed = 42;
-var saveBitmaps = true;
-var lr = 1e-7;
 
 foreach(var dataset in datasets)
 {
