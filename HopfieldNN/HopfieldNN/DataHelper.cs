@@ -68,6 +68,7 @@ namespace HopfieldNN
 
             return data;
         }
+
         public static void Print(int[] data, int width, int height)
         {
             for (int i = 0; i < height; i++)
@@ -86,6 +87,7 @@ namespace HopfieldNN
                 Console.WriteLine();
             }
         }
+
         public static int[][] ReaderCSV(string file)
         {
             var parser = new Microsoft.VisualBasic.FileIO.TextFieldParser(file);
@@ -129,7 +131,7 @@ namespace HopfieldNN
             }
             fbm.Dispose();
 
-            bm.Save($"../../../../../outputs/{name}{ind}{suffix}.bmp", ImageFormat.Bmp);
+            bm.Save($"../../../../../{name}{ind}{suffix}.bmp", ImageFormat.Bmp);
         }
 
         public static Bitmap BitmapTo1Bpp(Bitmap img)

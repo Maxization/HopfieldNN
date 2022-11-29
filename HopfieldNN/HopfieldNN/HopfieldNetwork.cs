@@ -28,6 +28,7 @@ namespace HopfieldNN
         int _width, _height;
         int _predicted = 0;
         bool _saveBitmaps;
+        public string savePath = "outputs/out";
 
         public HopfieldNetwork(LearningRule rule, int width, int height, double lr=1e-7, int ojaMaxIters=100, int seed = 42, bool saveBitmaps = false)
         {
@@ -64,7 +65,7 @@ namespace HopfieldNN
 
             for (int q = 0; q < _ojaMaxIters; q++)
             {
-                Console.WriteLine($"Oja iteration: {q}");
+                //Console.WriteLine($"Oja iteration: {q}");
 
                 var old = (double[,])_weights.Clone();
 
@@ -116,7 +117,7 @@ namespace HopfieldNN
             int trainSize = trainingData.GetLength(0);
             for (int k = 0; k < trainSize; k++)
             {
-                Console.WriteLine(k);
+                //Console.WriteLine(k);
                 var input = trainingData[k];
                 for (int i = 0; i < input.Length; i++)
                 {
@@ -160,7 +161,7 @@ namespace HopfieldNN
                 {
                     if (_saveBitmaps)
                     {
-                        DataHelper.CreateBitmap(input, _height, _width, _predicted, "out", "_" + iterations.ToString());
+                        DataHelper.CreateBitmap(input, _height, _width, _predicted, savePath, "_" + iterations.ToString());
                     }
 
                     //Synch
@@ -192,10 +193,10 @@ namespace HopfieldNN
 
                     if (Math.Abs(newEnergy - energy) < 1e-8)
                     {
-                        Console.WriteLine(iterations);
+                        //Console.WriteLine(iterations);
                         if (_saveBitmaps)
                         {
-                            DataHelper.CreateBitmap(input, _height, _width, _predicted, "out", "_" + (iterations + 1).ToString());
+                            DataHelper.CreateBitmap(input, _height, _width, _predicted, savePath, "_" + (iterations + 1).ToString());
                         }
                         _predicted++;
                         return input;
@@ -211,7 +212,7 @@ namespace HopfieldNN
                 {
                     if (_saveBitmaps)
                     {
-                        DataHelper.CreateBitmap(input, _height, _width, _predicted, "out", "_" + iterations.ToString());
+                        DataHelper.CreateBitmap(input, _height, _width, _predicted, savePath, "_" + iterations.ToString());
                     }
 
                     //Async
@@ -240,10 +241,10 @@ namespace HopfieldNN
 
                     if (Math.Abs(newEnergy - energy) < 1e-8)
                     {
-                        Console.WriteLine($"Prediction iterations: {iterations}");
+                        //Console.WriteLine($"Prediction iterations: {iterations}");
                         if (_saveBitmaps)
                         {
-                            DataHelper.CreateBitmap(input, _height, _width, _predicted, "out", "_" + (iterations + 1).ToString());
+                            DataHelper.CreateBitmap(input, _height, _width, _predicted, savePath, "_" + (iterations + 1).ToString());
                         }
                         _predicted++;
                         return input;
@@ -254,11 +255,11 @@ namespace HopfieldNN
                 }
             }
 
-            _predicted++;
             if (_saveBitmaps)
             {
-                DataHelper.CreateBitmap(input, _height, _width, _predicted, "out", "_" + (iterations + 1).ToString());
+                DataHelper.CreateBitmap(input, _height, _width, _predicted, savePath, "_" + (iterations + 1).ToString());
             }
+            _predicted++;
             return input;
         }
 
@@ -277,20 +278,6 @@ namespace HopfieldNN
                 for (int j = 0; j < y.GetLength(0); j++)
                 {
                     result[i] += x[j] * y[j, i]; 
-                }
-            }
-
-            return result;
-        }
-
-        private double[] Multiplication(double[,] x, int[] y)
-        {
-            var result = new double[x.GetLength(0)];
-            for (int i = 0; i < x.GetLength(0); i++)
-            {
-                for (int j = 0; j < x.GetLength(1); j++)
-                {
-                    result[i] += x[i, j] * y[j];
                 }
             }
 
